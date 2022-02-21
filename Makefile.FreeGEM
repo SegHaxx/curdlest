@@ -1,0 +1,22 @@
+CFLAGS=-za99 -oahnxs -ei -zp8 -0 -oe -DNDEBUG
+CC=wcl
+
+TARGETS=curdled.app
+
+src = $(wildcard *.c)
+obj = $(src:.c=.o)
+
+.PHONY: all clean
+all: $(TARGETS)
+clean:
+	rm -f $(TARGETS) $(obj)
+
+curdled.app: curdlest.c curdle.c stats.c
+	$(CC) $(CFLAGS) -mc -zt10000 $< -fe=$@
+	wdis curdlest.o -l=curdled.s
+	@du -b $@
+
+curdled.img: curdled.app CURDLED.RSC
+	rm -f $@
+	mkdosfs -n CURDLED -C $@ 360
+	mcopy -v -m -i $@ $^ ::/
