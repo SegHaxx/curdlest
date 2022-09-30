@@ -25,7 +25,7 @@ static char secret_curd[5]="KINKS";
 
 static OBJECT* curdle_ui;
 static OBJECT*	curdle_status;
-static OBJECT*	curd_box;
+static OBJECT* curd_box;
 static OBJECT* curd_grid;
 static OBJECT* curdle_kb;
 static   GRECT desk,work;  // desktop and work areas
@@ -37,14 +37,6 @@ static short guess_col;
 
 #define CURD_LEN 5
 #define GUESS_MAX 6
-
-// get screen coordinates for a curd grid OBJECT
-static void curd_get_grect(OBJECT* ob,GRECT* gr){
-	gr->x=ob->gr.x+curd_box->gr.x+curdle_ui->gr.x;
-	gr->y=ob->gr.y+curd_box->gr.y+curdle_ui->gr.y;
-	gr->w=ob->gr.w;
-	gr->h=ob->gr.h;
-}
 
 enum {WAITING,PLAYING,WON,LOST,STATS} ui_state = WAITING;
 
@@ -156,9 +148,20 @@ static void curdle_status_set(char* str){
 	ob_text_set(curdle_status,str);
 }
 
+// get screen coordinates for a curd grid OBJECT
+static void curd_get_grect(OBJECT* ob,GRECT* gr){
+       gr->x=ob->gr.x+curd_box->gr.x+curdle_ui->gr.x;
+       gr->y=ob->gr.y+curd_box->gr.y+curdle_ui->gr.y;
+       gr->w=ob->gr.w;
+       gr->h=ob->gr.h;
+}
+
 static void curd_redraw(OBJECT* ob){
 	GRECT gr;
 	curd_get_grect(ob,&gr);
+	//obj_offset(curdle_ui,(PXY*)&gr,(ob-curdle_ui)/sizeof(OBJECT));
+	//gr.w=ob->gr.w;
+	//gr.h=ob->gr.h;
 	window_redraw(&gr);
 }
 

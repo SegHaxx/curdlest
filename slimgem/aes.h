@@ -112,21 +112,6 @@ SHL int16_t appl_exit(void){
 	return(crys_if(19,0,1,0));
 }
 
-// Menu Library
-
-#define MN_SELECTED 10
-
-SHL int16_t menu_icheck(
-	OBJECT* const me_ctree,
-	int16_t me_citem,
-	int16_t me_ccheck)
-{
-	int_in[0]  = me_citem;
-	int_in[1]  = me_ccheck;
-	addr_in[0] = me_ctree;
-	return crys_if(31,2,1,1);
-}
-
 // Event Library
 
 SHL int16_t evnt_timer(uint32_t ev_msec){
@@ -202,6 +187,19 @@ SHL int16_t menu_bar(OBJECT* const me_btree,int16_t me_bshow){
 	return crys_if(30,1,1,1);
 }	
 
+#define MN_SELECTED 10
+
+SHL int16_t menu_icheck(
+	OBJECT* const me_ctree,
+	int16_t me_citem,
+	int16_t me_ccheck)
+{
+	addr_in[0] = me_ctree;
+	int_in[0]  = me_citem;
+	int_in[1]  = me_ccheck;
+	return crys_if(31,2,1,1);
+}
+
 SHL int16_t menu_tnormal(
 	OBJECT* me_ntree,
 	int16_t me_ntitle,
@@ -232,6 +230,19 @@ SHL int16_t objc_draw(
 	int_in[1]=depth;
 	gr_copy(clip,&int_in[2]);
 	return crys_if(42,6,1,1);
+}
+
+SHL int16_t obj_offset(
+	OBJECT* tree,
+	PXY* px,
+	int16_t obj)
+{
+	addr_in[0]=tree;
+	int_in[0]=obj;
+	int16_t ret=crys_if(44,1,3,1);
+	px->x=int_out[1];
+	px->y=int_out[2];
+	return ret;
 }
 
 SHL int16_t objc_change(
@@ -277,8 +288,8 @@ SHL int16_t form_dial_gr(
 }
 
 SHL int16_t form_alert(int16_t fo_adefbttn,const char* const fo_astring){
-	int_in[0] =fo_adefbttn;
 	addr_in[0]=(char*)fo_astring;
+	int_in[0] =fo_adefbttn;
 	return crys_if(52,1,1,1);
 }
 
@@ -288,10 +299,7 @@ SHL int16_t form_center_gr(
 {
 	addr_in[0]=(OBJECT*)fo_ctree;
 	int16_t ret=crys_if(54,0,5,1);
-	fo_c->x=int_out[1];
-	fo_c->y=int_out[2];
-	fo_c->w=int_out[3];
-	fo_c->h=int_out[4];
+	gr_copy(&int_out[1],fo_c);
 	return(ret);
 }
 
@@ -347,8 +355,8 @@ SHL int16_t graf_mouse(int16_t gr_monumber){
 }
 
 SHL int16_t graf_mouse_set(MFORM* const gr_mofaddr){
-	int_in[0]=USER_DEF;
 	addr_in[0]=gr_mofaddr;
+	int_in[0]=USER_DEF;
 	return crys_if(78,1,1,1);
 }
 

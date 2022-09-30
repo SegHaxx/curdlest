@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-
 typedef struct{
 	uint16_t wins;
 	uint16_t losses;
@@ -16,6 +13,8 @@ static OBJECT* form_stats;
 
 static const char stats_filename[]=CURDLE_SAV;
 
+#if !defined(__MINT__) && !defined(__WATCOMC__)
+#include <stdio.h>
 static void curdle_stats_load(){
 	FILE* f=fopen (stats_filename,"r");
 	if(!f) return;
@@ -24,11 +23,48 @@ static void curdle_stats_load(){
 }
 
 static void curdle_stats_save(){
-	FILE* f=fopen (stats_filename,"w");
+	FILE* f=fopen(stats_filename,"w");
 	if(!f) return;
 	fwrite(&curdle_stats,sizeof(CURDLE_STATS_T),1,f);
 	fclose(f);
 }
+#endif
+
+#ifdef __MINT__
+static void curdle_stats_load(){
+	int32_t f=Fopen(stats_filename,S_READ);
+	if(f<0) return;
+	Fread(f,sizeof(CURDLE_STATS_T),&curdle_stats);
+	Fclose(f);
+}
+
+static void curdle_stats_save(){
+	int32_t f=Fopen(stats_filename,S_WRITE);
+	if(f<0) return;
+	Fwrite(f,sizeof(CURDLE_STATS_T),&curdle_stats);
+	Fclose(f);
+}
+#endif
+
+#ifdef __WATCOMC__
+#include <dos.h>
+#include <fcntl.h>
+static void curdle_stats_load(){
+	unsigned read;
+	int f;
+	if(_dos_open(stats_filename,O_RDONLY,&f)) return;
+	_dos_read(f,&curdle_stats,sizeof(CURDLE_STATS_T),&read);
+	_dos_close(f);
+}
+
+static void curdle_stats_save(){
+	unsigned wrote;
+	int f;
+	if(_dos_creat(stats_filename,_A_NORMAL,&f)) return;
+	_dos_write(f,&curdle_stats,sizeof(CURDLE_STATS_T),&wrote);
+	_dos_close(f);
+}
+#endif
 
 static void curdle_stats_init(int colors){
 	form_stats=rsrc_gaddr(R_TREE,CURDLE_STATS);
@@ -60,6 +96,12 @@ static void curdle_stats_update(int16_t win,int16_t guesses){
 		curdle_stats.streak_max=curdle_stats.streak_cur;
 	}
 	curdle_stats_save();
+}
+
+static char* strcpy(char* dst, const char* src){
+	char* ptr=dst;
+	while((*dst++=*src++));
+	return ptr;
 }
 
 static void itoa_u16(char* dst,uint16_t n){
