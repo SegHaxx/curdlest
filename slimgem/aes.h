@@ -55,13 +55,21 @@ typedef struct{
 	   void* cb_padrout;
 } AESPB;
 
-AESPB aespb;
 void* addr_in[8];
 void* addr_out[2];
 int16_t control[5];
 int16_t int_in[16];
 int16_t int_out[10];
 int16_t aes_global[15];
+
+AESPB aespb={
+	.cb_pcontrol=control,
+	.cb_pglobal =aes_global,
+	.cb_pintin  =int_in,
+	.cb_pintout =int_out,
+	.cb_padrin  =addr_in,
+	.cb_padrout =addr_out
+};
 
 int16_t gl_apid;
 
@@ -84,12 +92,6 @@ static int16_t crys_if(
 // Application Library
 
 SHL int16_t appl_init(void){
-	aespb.cb_pcontrol=control;
-	aespb.cb_pglobal =aes_global;
-	aespb.cb_pintin  =int_in;
-	aespb.cb_pintout =int_out;
-	aespb.cb_padrin  =addr_in;
-	aespb.cb_padrout =addr_out;
 	control[4]=0; // num_addr_out never changes
 	gl_apid=crys_if(10,0,1,0);
 	return gl_apid;
