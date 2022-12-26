@@ -10,3 +10,5 @@
 #define CURDLE_STATS     1   /* Form/Dialog-box */
 #define STATS_FIRST      2   /* TEXT in tree CURDLE_STATS */
 #define STATS_FIRST_BAR  15  /* BOXTEXT in tree CURDLE_STATS */
+
+#define CURDLE_ABOUT     2   /* Form/Dialog-box */

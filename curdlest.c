@@ -430,6 +430,17 @@ static void handle_aes_events(){
 	}
 }
 
+static void curdle_about_show(void){
+	OBJECT* form_about=rsrc_gaddr(R_TREE,CURDLE_ABOUT);
+	GRECT c;
+	form_center_gr(form_about,&c);
+	form_dial_gr(FMD_START,0,&c);
+	objc_draw(form_about,0,8,&c);
+	int16_t obj=form_do(form_about,0);
+	ob_deselect(&form_about[obj]);
+	form_dial_gr(FMD_FINISH,0,&c);
+}
+
 int main(void){
 	int16_t appid=appl_init();
 	assert(appid>=0);
@@ -458,9 +469,10 @@ int main(void){
 		// register into the desk menu
 		acc_menu_id=menu_register(gl_apid,app_name);
 	}else{
+		graf_mouse(ARROW);
+		curdle_about_show();
 		// open the window now
 		window_open();
-		graf_mouse(ARROW);
 	}
 
 	handle_aes_events();
