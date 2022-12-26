@@ -255,7 +255,7 @@ static void ui_do_guess(OBJECT* grid){
 			if(guess[j]==c){
 				if(curdle_kb_state[i]>=hint[j]) break;
 				curdle_kb_state[i]=hint[j];
-				boxchar_set_gamestate(&curdle_kb[i],hint[j]);
+				boxchar_set_gamestate(ob,hint[j]);
 			}
 		}
 	}
