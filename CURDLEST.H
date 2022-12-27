@@ -12,3 +12,4 @@
 #define STATS_FIRST_BAR  15  /* BOXTEXT in tree CURDLE_STATS */
 
 #define CURDLE_ABOUT     2   /* Form/Dialog-box */
+#define ICON_SEG         1   /* ICON in tree CURDLE_ABOUT */

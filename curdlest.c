@@ -2,7 +2,11 @@
 // Copyright 2022 Seg <seg@haxxed.com>
 
 #include "slimgem/gem.h"
+//#include "portable/print.h"
+#define NDEBUG
 #include <assert.h>
+
+#define DEBUGPLAY
 
 // skirt RSC endian issues with different names
 #include "CURDLEST.H"
@@ -142,6 +146,35 @@ static void ob_text_set(OBJECT* ob,char* str){
 	((TEDINFO*)ob->spec)->text=str;
 }
 
+static void curdle_about_show(void){
+	OBJECT* form_about=rsrc_gaddr(R_TREE,CURDLE_ABOUT);
+
+#if 0
+	OBJECT* ob=&form_about[ICON_SEG];
+	assert(ob->type==G_ICON);
+	print("X ");
+	print_i16(ob->gr.x);
+	print(" Y ");
+	print_i16(ob->gr.y);
+	print(" W ");
+	print_i16(ob->gr.w);
+	print(" H ");
+	print_i16(ob->gr.h);
+	print(NL);
+	if(gl_hbox>8){
+		//ob->gr.y+=gl_hbox/2;
+	}
+#endif
+
+	GRECT c;
+	form_center_gr(form_about,&c);
+	form_dial_gr(FMD_START,0,&c);
+	objc_draw(form_about,0,8,&c);
+	int16_t obj=form_do(form_about,0);
+	ob_deselect(&form_about[obj]);
+	form_dial_gr(FMD_FINISH,0,&c);
+}
+
 #include "stats.c"
 
 static void curdle_status_set(char* str){
@@ -193,8 +226,11 @@ static void curdle_ui_update_state(void){
 			ui_state=WAITING;
 			curdle_stats_show();
 		case WAITING: // waiting for next game
-			//current_day=curd_get_day();
+#ifndef DEBUGPLAY
+			current_day=curd_get_day();
+#else
 			current_day=curdle_stats.day+1;
+#endif
 			if(current_day>curdle_stats.day){
 				curdle_stats.day=current_day;
 				secret_curd[0]=0;
@@ -220,7 +256,9 @@ static void ui_do_guess(OBJECT* grid){
 	// and do a clever lazy curd pick
 	if(secret_curd[0]==0){
 		curd_pick_day(secret_curd,curdle_stats.day);
+#ifdef DEBUGPLAY
 		curdle_status_set(secret_curd);
+#endif
 	}
 	int8_t hint[5]={0};
 	switch(curd_check(secret_curd,guess,hint)){
@@ -394,6 +432,7 @@ static void accessory_handle_event(int16_t* msg){
 			if(msg[4]==acc_menu_id){
 				if(wi_handle == NO_WINDOW){
 					open_vwork();
+					curdle_about_show();
 					window_open();
 				}
 				else wind_set_top(wi_handle);}
@@ -430,17 +469,6 @@ static void handle_aes_events(){
 	}
 }
 
-static void curdle_about_show(void){
-	OBJECT* form_about=rsrc_gaddr(R_TREE,CURDLE_ABOUT);
-	GRECT c;
-	form_center_gr(form_about,&c);
-	form_dial_gr(FMD_START,0,&c);
-	objc_draw(form_about,0,8,&c);
-	int16_t obj=form_do(form_about,0);
-	ob_deselect(&form_about[obj]);
-	form_dial_gr(FMD_FINISH,0,&c);
-}
-
 int main(void){
 	int16_t appid=appl_init();
 	assert(appid>=0);
@@ -458,9 +486,12 @@ int main(void){
 	curdle_stats_init(colors);
 	//curdle_stats_show();
 
-	//curdle_stats.day=0;
-	//secret_curd[0]=0;
+#ifndef DEBUGPLAY
+	curdle_stats.day=0;
+	secret_curd[0]=0;
+#else
 	ui_state=PLAYING;
+#endif
 
 	// libcmini sets _app if we are running as an application
 	if(!_app){

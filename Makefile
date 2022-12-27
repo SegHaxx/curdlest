@@ -1,7 +1,7 @@
 PREFIX=m68k-atari-mint
 CC=$(PREFIX)-gcc-4.6.4
 
-CFLAGS=-std=gnu99 -Wall -Wno-array-bounds -Os -mshort -mfastcall -DNDEBUG
+CFLAGS=-std=gnu99 -Wall -Wno-array-bounds -Os -mshort -mfastcall
 
 LIBCMINI_DIR=$(HOME)/src/libcmini/build
 LINK=-nostdlib $(LIBCMINI_DIR)/crt0.o $< memset.o -L$(LIBCMINI_DIR)/mshort/mfastcall $(LDFLAGS) -lcmini -lgcc -o $@

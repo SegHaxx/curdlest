@@ -5,11 +5,40 @@ typedef struct{
 // copy a GRECT
 #define gr_copy(s,d) copy_i16x4(s,d)
 
+// static parameter blocks
+typedef struct{
+	int16_t* cb_pcontrol;
+	int16_t* cb_pglobal;
+	int16_t* cb_pintin;
+	int16_t* cb_pintout;
+	   void* cb_padrin;
+	   void* cb_padrout;
+} AESPB;
+
+void* addr_in[8];
+void* addr_out[2];
+int16_t control[5];
+int16_t int_in[16];
+int16_t int_out[10];
+int16_t aes_global[15];
+
+AESPB aespb={
+	.cb_pcontrol=control,
+	.cb_pglobal =aes_global,
+	.cb_pintin  =int_in,
+	.cb_pintout =int_out,
+	.cb_padrin  =addr_in,
+	.cb_padrout =addr_out
+};
+
+int16_t gl_apid;
+
 // OBJECT types
 #define G_BOX     20
 #define G_TEXT    21
 #define G_BOXTEXT 22
 #define G_BOXCHAR 27
+#define G_ICON    31
 
 // OBJECT states
 #define NORMAL   0x00
@@ -47,32 +76,19 @@ typedef struct{
 } TEDINFO;
 
 typedef struct{
-	int16_t* cb_pcontrol;
-	int16_t* cb_pglobal;
-	int16_t* cb_pintin;
-	int16_t* cb_pintout;
-	   void* cb_padrin;
-	   void* cb_padrout;
-} AESPB;
+  uint16_t*	mask;    /* Pointer to the icon mask           */
+  uint16_t*	data;    /* Pointer to the icon image          */
+  int8_t*	ptext;    /* Pointer to the icon text           */
+  uint16_t	ib_char;      /* Character that is to appear in the
+                             icon, as well as the foreground
+                             and background colour of the Icon  */
+  PXY		chr;     /* X-coordinate of the character      */
+  GRECT	icon;     /* X-coordinate of the icon           */
+  GRECT	text;     /* X-coordinate of the text           */
+  uint16_t  reserved;
+} ICONBLK;
 
-void* addr_in[8];
-void* addr_out[2];
-int16_t control[5];
-int16_t int_in[16];
-int16_t int_out[10];
-int16_t aes_global[15];
-
-AESPB aespb={
-	.cb_pcontrol=control,
-	.cb_pglobal =aes_global,
-	.cb_pintin  =int_in,
-	.cb_pintout =int_out,
-	.cb_padrin  =addr_in,
-	.cb_padrout =addr_out
-};
-
-int16_t gl_apid;
-
+// AES glue code
 static void aes(void);
 
 static int16_t crys_if(
