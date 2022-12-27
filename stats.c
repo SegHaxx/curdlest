@@ -9,8 +9,6 @@ typedef struct{
 
 CURDLE_STATS_T curdle_stats={0};
 
-static OBJECT* form_stats;
-
 static const char stats_filename[]=CURDLE_SAV;
 
 #if !defined(__MINT__) && !defined(__WATCOMC__)
@@ -67,7 +65,7 @@ static void curdle_stats_save(){
 #endif
 
 static void curdle_stats_init(int colors){
-	form_stats=rsrc_gaddr(R_TREE,CURDLE_STATS);
+	OBJECT* form_stats=rsrc_gaddr(R_TREE,CURDLE_STATS);
 
 	// propagate bar fill attributes according to color depth
 	OBJECT* ob=&form_stats[STATS_FIRST_BAR];
@@ -116,6 +114,8 @@ static void itoa_u16(char* dst,uint16_t n){
 }
 
 static void curdle_stats_show(){
+	OBJECT* form_stats=rsrc_gaddr(R_TREE,CURDLE_STATS);
+
 	// we need to convert a lot of ints to strings
 	char str[10][6];
 	// compute and fill in basic game stats
@@ -147,13 +147,7 @@ static void curdle_stats_show(){
 	}
 
 	// display dialog
-	GRECT c;
-	form_center_gr(form_stats,&c);
-	form_dial_gr(FMD_START,0,&c);
-	objc_draw(form_stats,0,8,&c);
-	int16_t obj=form_do(form_stats,0);
-	ob_deselect(&form_stats[obj]);
-	form_dial_gr(FMD_FINISH,0,&c);
+	form_doer(form_stats);
 
 	// restore for next time
 	form_stats[STATS_FIRST_BAR].gr.w=bar_maxlen+16;

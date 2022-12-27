@@ -146,6 +146,16 @@ static void ob_text_set(OBJECT* ob,char* str){
 	((TEDINFO*)ob->spec)->text=str;
 }
 
+static void form_doer(OBJECT* form){
+	GRECT c;
+	form_center_gr(form,&c);
+	form_dial_gr(FMD_START,0,&c);
+	objc_draw(form,0,8,&c);
+	int16_t obj=form_do(form,0);
+	ob_deselect(&form[obj]);
+	form_dial_gr(FMD_FINISH,0,&c);
+}
+
 static void curdle_about_show(void){
 	OBJECT* form_about=rsrc_gaddr(R_TREE,CURDLE_ABOUT);
 
@@ -166,13 +176,7 @@ static void curdle_about_show(void){
 	}
 #endif
 
-	GRECT c;
-	form_center_gr(form_about,&c);
-	form_dial_gr(FMD_START,0,&c);
-	objc_draw(form_about,0,8,&c);
-	int16_t obj=form_do(form_about,0);
-	ob_deselect(&form_about[obj]);
-	form_dial_gr(FMD_FINISH,0,&c);
+	form_doer(form_about);
 }
 
 #include "stats.c"
