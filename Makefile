@@ -29,3 +29,8 @@ memset.o: memset.c
 
 wordlist.h: wordlist.txt list2h.pl
 	./list2h.pl < $< > $@
+
+curdlest.st: README.TXT curdlest.prg CURDLEST.RSC
+	rm -f $@
+	mkdosfs -n CURDLEST -C $@ 720
+	mcopy -v -m -i $@ AUTO/ $^ DESKTOP.INF ::/
