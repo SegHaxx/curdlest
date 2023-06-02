@@ -95,16 +95,42 @@ static unsigned int curd_get_day(void){
 	return curd;
 }
 
-static void curd_pick_day(char* secret, unsigned int day){
-#ifdef __m68k__	
-	uint32_t rng_state[4]={0x7b0f680d,0x4502e955,0x81300422,0x90f3122e};
-#else
-	uint32_t rng_state[4]={0x5b0b680d,0xa5dff057,0x827b0548,0x801f610e};
-#endif
+static uint32_t rng_state[4];
 
-	for(unsigned int i=0;i<day;++i)
-		rng_xor128_u32(rng_state);
+#if defined(__GNUC__) && defined(__OPTIMIZE_SIZE__)
+__attribute__ ((noinline))
+#endif
+static void rng_init(void){
+#ifdef __m68k__	
+	rng_state[0]=0x7b0f680d;
+	rng_state[1]=0x4502e955;
+	rng_state[2]=0x81300422;
+	rng_state[3]=0x90f3122e;
+#else
+	rng_state[0]=0x5b0b680d;
+	rng_state[1]=0xa5dff057;
+	rng_state[2]=0x827b0548;
+	rng_state[3]=0x801f610e;
+#endif
+}
+
+#include "portable/timer.h"
+
+static void rng_seed(void){
+	long time=get_ticks();
+	//printl(time);print(NL);
+	rng_state[3]^=~(uint32_t)time;
+}
+
+static void curd_pick_rng(char* secret){
 	unsigned int n=rng_xor128(rng_state,curdlist_count);
 	curd_pick(secret,n);
-	return;
+}
+
+static void curd_pick_day(char* secret, unsigned int day){
+	rng_init();
+	for(unsigned int i=0;i<day;++i)
+		rng_xor128_u32(rng_state);
+	curd_pick_rng(secret);
+	rng_seed();
 }

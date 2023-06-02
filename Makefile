@@ -7,7 +7,7 @@ LIBCMINI_DIR=$(HOME)/src/libcmini/build
 LINK=-nostdlib $(LIBCMINI_DIR)/crt0.o $< memset.o -L$(LIBCMINI_DIR)/mshort/mfastcall $(LDFLAGS) -lcmini -lgcc -o $@
 #LINK=$< $(LDFLAGS) -o $@
 
-TARGETS=wordlist.h curdlest.prg
+TARGETS=wordlist.h curdlest.prg CurdleST.zip CurdleST.st
 
 src = $(wildcard *.c)
 obj = $(src:.c=.o)
@@ -30,7 +30,14 @@ memset.o: memset.c
 wordlist.h: wordlist.txt list2h.pl
 	./list2h.pl < $< > $@
 
-curdlest.st: README.TXT curdlest.prg CURDLEST.RSC
+CurdleST.zip: curdlest.prg CURDLEST.RSC README.TXT
+	@rm -f $@
+	@7za a -mx9 -bb1 $@ AUTO/AUTODATE.PRG $^ 
+
+CurdleST.st: curdlest.prg CURDLEST.RSC README.TXT
 	rm -f $@
 	mkdosfs -n CURDLEST -C $@ 720
-	mcopy -v -m -i $@ AUTO/ $^ DESKTOP.INF ::/
+	@mmd -i $@ AUTO
+	@mcopy -v -m -i $@ AUTO/AUTOWARP.PRG AUTO/WARP9_ST.PRX ::/AUTO
+	@mcopy -v -m -i $@ AUTO/AUTODATE.PRG ::/AUTO
+	@mcopy -v -m -i $@ DESKTOP.INF $^ ::/

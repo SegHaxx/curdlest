@@ -62,7 +62,7 @@ typedef struct{
 } OBJECT;
 
 typedef struct{
-	  char* text;          /* Pointer to a string              */
+	  const char* text;          /* Pointer to a string              */
 	  char* tmplt;         /* Pointer to the string template   */
 	  char* valid;         /* Pointer to the validation string */
 	int16_t font;

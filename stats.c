@@ -37,8 +37,12 @@ static void curdle_stats_load(){
 }
 
 static void curdle_stats_save(){
-	int32_t f=Fopen(stats_filename,S_WRITE);
+	// Fopen won't create files on TOS 1.0?
+	int32_t f=Fcreate(stats_filename,0);
 	if(f<0) return;
+	//Fclose(f);
+	//f=Fopen(stats_filename,S_WRITE);
+	//if(f<0) return;
 	Fwrite(f,sizeof(CURDLE_STATS_T),&curdle_stats);
 	Fclose(f);
 }

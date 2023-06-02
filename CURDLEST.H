@@ -13,3 +13,4 @@
 
 #define CURDLE_ABOUT     2   /* Form/Dialog-box */
 #define ICON_SEG         1   /* ICON in tree CURDLE_ABOUT */
+#define ABOUT_VERSION    2   /* TEXT in tree CURDLE_ABOUT */

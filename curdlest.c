@@ -6,23 +6,29 @@
 #define NDEBUG
 #include <assert.h>
 
-#define DEBUGPLAY
+//#define DEBUGPLAY
 
 // skirt RSC endian issues with different names
 #include "CURDLEST.H"
 #ifdef __m68k__
-static const char app_name[]="  CurdleST ";
+#define APP_NAME "CurdleST"
 #define CURDLE_RSC "CURDLEST.RSC"
 #define CURDLE_SAV "CURDLEST.SAV"
 #else
-static const char app_name[]="  Curdled ";
+#define APP_NAME "Curdled"
 #define CURDLE_RSC "CURDLED.RSC"
 #define CURDLE_SAV "CURDLED.SAV"
 #endif
+static const char app_name[]="  " APP_NAME " ";
 
 static int16_t gl_wbox,gl_hbox; // UI cell sizes
 
-static char secret_curd[5]="KINKS";
+static char secret_curd[5]
+#ifdef DEBUGPLAY
+="KINKS"
+#endif
+;
+
 #include "curdle.c"
 
 // Window stuff
@@ -42,7 +48,7 @@ static short guess_col;
 #define CURD_LEN 5
 #define GUESS_MAX 6
 
-enum {WAITING,PLAYING,WON,LOST,STATS} ui_state = WAITING;
+enum {WAITING,WON,LOST,STATS,ASKING,PLAYING,FREEPLAY} ui_state = WAITING;
 
 // walk the dirty rectangle list and redraw
 static void window_do_redraw(GRECT* dirty){
@@ -141,7 +147,7 @@ static void boxchar_set_char(OBJECT* ob,char c){
 	ob->spec=(void*)(spec|(uint32_t)c<<24);
 }
 
-static void ob_text_set(OBJECT* ob,char* str){
+static void ob_text_set(OBJECT* ob,const char* str){
 	assert((ob->type==G_TEXT)||(ob->type==G_BOXTEXT));
 	((TEDINFO*)ob->spec)->text=str;
 }
@@ -156,8 +162,12 @@ static void form_doer(OBJECT* form){
 	form_dial_gr(FMD_FINISH,0,&c);
 }
 
+static const char about_version[]=APP_NAME " beta1";
+
 static void curdle_about_show(void){
 	OBJECT* form_about=rsrc_gaddr(R_TREE,CURDLE_ABOUT);
+
+	ob_text_set(&form_about[ABOUT_VERSION],about_version);
 
 #if 0
 	OBJECT* ob=&form_about[ICON_SEG];
@@ -237,13 +247,30 @@ static void curdle_ui_update_state(void){
 #endif
 			if(current_day>curdle_stats.day){
 				curdle_stats.day=current_day;
-				secret_curd[0]=0;
 				ui_state=PLAYING;
+				secret_curd[0]=0;
 				curdle_ui_reset();
 				curdle_status_set("Guess the secret word");
 				boxchar_set_char(&curd_grid[0],'_'); // cursor
 				window_redraw(&desk);
+				break;
 			}
+			ui_state=ASKING;
+			break;
+		case ASKING:
+			ui_state=LOST;
+			if(form_alert(2,"[2]["
+						"Free Play Mode?| |"
+						"Statistics will|"
+						" not be saved. ]"
+						"[ Yes | No ]")!=1)
+				break;
+			ui_state=FREEPLAY;
+			curd_pick_rng(secret_curd);
+			curdle_ui_reset();
+			curdle_status_set("Free Play Mode");
+			boxchar_set_char(&curd_grid[0],'_'); // cursor
+			window_redraw(&desk);
 		default:
 			break;
 	}
@@ -265,6 +292,7 @@ static void ui_do_guess(OBJECT* grid){
 #endif
 	}
 	int8_t hint[5]={0};
+	int prev_state=ui_state;
 	switch(curd_check(secret_curd,guess,hint)){
 		case 0: // Incorrect
 			++guess_num;
@@ -281,9 +309,10 @@ static void ui_do_guess(OBJECT* grid){
 			curdle_status_set("Not in word list");
 			break;
 	}
-	if(ui_state!=PLAYING){
+	if(ui_state<PLAYING){
 		// game ended, update stats
-		curdle_stats_update(ui_state==WON?1:0,guess_num);
+		if(prev_state==PLAYING)
+			curdle_stats_update(ui_state==WON?1:0,guess_num);
 	}
 	// update curd grid
 	for(int i=0;i<CURD_LEN;++i){
@@ -307,7 +336,7 @@ static void ui_do_guess(OBJECT* grid){
 
 // implement custom text entry etc
 static void ui_handle_key(int16_t key){
-	if(ui_state!=PLAYING){
+	if(ui_state<PLAYING){
 		ui_state=STATS;
 		return;
 	}
@@ -336,7 +365,7 @@ static void ui_handle_key(int16_t key){
 			guess_col++;
 	}
 	if(guess_col>=CURD_LEN) return;
-	if(ui_state!=PLAYING) return;
+	if(ui_state<PLAYING) return;
 	grid=&curd_grid[guess_num*CURD_LEN];
 	boxchar_set_char(&grid[guess_col],'_'); // display cursor
 	curd_redraw(&grid[guess_col]);
@@ -488,13 +517,13 @@ int main(void){
 	window_init(colors);
 
 	curdle_stats_init(colors);
-	//curdle_stats_show();
 
+	rng_init();
+	rng_seed();
 #ifndef DEBUGPLAY
-	curdle_stats.day=0;
 	secret_curd[0]=0;
 #else
-	ui_state=PLAYING;
+	curdle_stats.day=0;
 #endif
 
 	// libcmini sets _app if we are running as an application
